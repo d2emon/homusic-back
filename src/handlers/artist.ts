@@ -5,10 +5,9 @@ import HttpException from '../exceptions';
 import {
     capitalize,
     slugToTitle,
-} from '../helper/title';
+} from '../helpers/title';
 import Artist, {
     ArtistInterface,
-    ArtistResponse,
 } from '../models/artist';
 
 class ArtistHandler {
@@ -19,19 +18,19 @@ class ArtistHandler {
     }
 
     find(letter?: string, title?: string, query?: {}) {
-        const response: ArtistResponse = letter
+        const response = letter
             ? Artist.findByLetter(letter)
             : Artist.find(query);
         return response
             .sort({ name: 1 })
-            .then(artists => this.responseArtists(title, letter, artists))
+            .then((artists: ArtistInterface[]) => this.responseArtists(title, letter, artists))
             .catch(this.responseError)
     }
 
     responseArtists(title?: string, letter?: string, processed: ArtistInterface[] = []) {
         return Artist
             .getUnprocessed(letter)
-            .then((response) => response.map((slug) => ({
+            .then((response: string[]) => response.map((slug) => ({
                 name: slugToTitle(slug),
                 slug,
                 unprocessed: true,
@@ -40,7 +39,7 @@ class ArtistHandler {
                 ...processed,
                 ...unprocessed,
             ])
-            .then((artists) => this.res.json({
+            .then((artists: ArtistInterface[]) => this.res.json({
                 artists,
                 title: title || capitalize(letter),
             }));
