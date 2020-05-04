@@ -3,5 +3,7 @@
   "DEBUG": "homusic:*",
   "LOG_LEVEL": "debug",
   "MONGO_URI": "mongodb://localhost/homusic",
-  "PORT": 3000
+  "PORT": 3000,
+  "FOLDERS:WIKI": "./files/pages/wiki",
+  "FOLDERS:ARTISTS": "./files/artists"
 }
