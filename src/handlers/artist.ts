@@ -11,67 +11,64 @@ import {
     successResponse,
     errorResponse,
 } from './response';
+import {DocumentQuery} from "mongoose";
+import HttpException from "../exceptions/http";
 
-class ArtistHandler {
-    req: express.Request;
+const injectUnprocessed = (processed: IArtistDocument[], letter?: string): Promise<IArtistDocument[]> => Artist
+    .getUnprocessed(letter)
+    .then((response: string[]) => response.map((slug) => ({
+        name: slugToTitle(slug),
+        slug,
+        unprocessed: true,
+    })))
+    .then((unprocessed:IArtistDocument[]) => [
+        ...processed,
+        ...unprocessed,
+    ]);
 
-    res: express.Response;
+const find = (
+    res: express.Response,
+    query: DocumentQuery<IArtistDocument[], IArtistDocument>,
+    title: string,
+    letter?: string,
+) => query
+    .sort({ name: 1 })
+    .then((artists: IArtistDocument[]) => injectUnprocessed(artists, letter))
+    .then((artists: IArtistDocument[]) => successResponse(res, { artists, title }))
+    .catch((error: HttpException) => errorResponse(res, error));
 
-    constructor(req: express.Request, res: express.Response) {
-        this.req = req;
-        this.res = res;
-    }
+export default {
+    byLetter: (req: express.Request, res: express.Response) => {
+        const {
+            language,
+            letter,
+        } = req.params;
+        if (!language || !letter) return errorResponse(res, new HttpException(400, 'No letter'));
+        const translated = getLetter(language, letter) || letter;
+        return find(
+            res,
+            Artist.findByLetter(letter),
+            capitalize(translated),
+            translated,
+        );
+    },
 
-    responseArtists(title?: string, letter?: string, processed: IArtistDocument[] = []) {
-        return Artist
-            .getUnprocessed(letter)
-            .then((response: string[]) => response.map((slug) => ({
-                name: slugToTitle(slug),
-                slug,
-                unprocessed: true,
-            })))
-            .then((unprocessed:IArtistDocument[]) => [
-                ...processed,
-                ...unprocessed,
-            ])
-            .then((artists: IArtistDocument[]) => successResponse(
-                this.res,
-                {
-                    artists,
-                    title: title || capitalize(letter),
-                },
-            ));
-    }
+    getAll: (req: express.Request, res: express.Response) => find(
+        res,
+        Artist.find({}),
+        'Все',
+    ),
 
-    find(letter?: string, title?: string, query?: {}) {
-        const response = letter
-            ? Artist.findByLetter(letter)
-            : Artist.find(query);
-        return response
-            .sort({ name: 1 })
-            .then((artists: IArtistDocument[]) => this.responseArtists(title, letter, artists))
-            .catch(error => errorResponse(this.res, error))
-    }
+    getOther: (req: express.Request, res: express.Response) => find(
+        res,
+        Artist.find({ name: null }),
+        'Разные песни',
+    ),
 
-    byLetter(language?: string, letter?: string) {
-        if (!language || !letter) return this.responseArtists(undefined, letter);
-        const translated = getLetter(language, letter);
-        return translated
-            ? this.find(translated)
-            : this.responseArtists(undefined);
-    }
-
-    getAll() {
-        return this.find(undefined, 'Все');
-    }
-
-    getOther() {
-        return this.find(undefined, 'Разные песни', { name: null });
-    }
-
-    getNum() {
-        return this.find(undefined, '[0-9]', '#');
-    }
+    getNum: (req: express.Request, res: express.Response) => find(
+        res,
+        Artist.findByLetter('[0-9]'),
+        '#',
+        '[0-9]',
+    ),
 }
-
-export default ArtistHandler;
