@@ -1,8 +1,6 @@
 import express from 'express';
-import HttpException from '../exceptions/http';
 import ArtistHandler from '../handlers/artist';
 import PageHandler from '../handlers/page';
-import getLetter from '../helpers/letters/index';
 
 const router = express.Router();
 
@@ -13,33 +11,24 @@ router.get('/', (req: express.Request, res: express.Response) => res
 router.get('/index.:format?', (req: express.Request, res: express.Response) => res
     .json({}));
 
-router.get('/artists/:language/:letter', (req: express.Request, res: express.Response) => {
-    const {
-        language,
-        letter,
-    } = req.params;
+router.get('/artists/all', (req: express.Request, res: express.Response) => {
     const handler = new ArtistHandler(req, res);
-    if (!language || !letter) return handler.responseArtists(undefined, letter);
-    const translated = getLetter(language, letter);
-    return translated
-        ? handler.find(translated)
-        : handler.responseArtists(undefined);
+    return handler.getAll();
 });
 
-router.get('/artists/:special', (req: express.Request, res: express.Response) => {
-    const {
-        special,
-    } = req.params;
+router.get('/artists/other', (req: express.Request, res: express.Response) => {
     const handler = new ArtistHandler(req, res);
-    if (special === 'all') {
-        return handler.find(undefined, 'Все');
-    } else if (special === 'other') {
-        return handler.find(undefined, 'Разные песни', { name: null });
-    } else if (special === 'num') {
-        return handler.find(undefined, '[0-9]', '#');
-    } else {
-        return handler.responseError(new HttpException(400, 'Unknown special query'));
-    }
+    return handler.getOther();
+});
+
+router.get('/artists/num', (req: express.Request, res: express.Response) => {
+    const handler = new ArtistHandler(req, res);
+    return handler.getNum();
+});
+
+router.get('/artists/:language/:letter', (req: express.Request, res: express.Response) => {
+    const handler = new ArtistHandler(req, res);
+    return handler.byLetter(req.params.language, req.params.letter);
 });
 
 router.get('/pages', (req: express.Request, res: express.Response) => {

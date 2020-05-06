@@ -8,6 +8,7 @@ import {
 import Artist, {
     IArtistDocument,
 } from '../models/artist';
+import getLetter from "../helpers/letters";
 
 class ArtistHandler {
     req: express.Request;
@@ -49,6 +50,26 @@ class ArtistHandler {
 
     responseError(error: HttpException) {
         return ErrorHandler(error, this.req, this.res);
+    }
+
+    byLetter(language?: string, letter?: string) {
+        if (!language || !letter) return this.responseArtists(undefined, letter);
+        const translated = getLetter(language, letter);
+        return translated
+            ? this.find(translated)
+            : this.responseArtists(undefined);
+    }
+
+    getAll() {
+        return this.find(undefined, 'Все');
+    }
+
+    getOther() {
+        return this.find(undefined, 'Разные песни', { name: null });
+    }
+
+    getNum() {
+        return this.find(undefined, '[0-9]', '#');
     }
 }
 
