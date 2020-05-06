@@ -6,13 +6,13 @@ log.configure({
     transports: [
         new log.transports.Console({
             format: log.format.simple(),
-            level: config.get('LOG_LEVEL'),
+            level: config.get('LOG.LEVEL'),
         }),
         /*
         new log.transports.File({
-            filename: config.get('LOG_FILENAME'),
+            filename: config.get('LOG.FILENAME'),
             format: log.format.json(),
-            level: config.get('LOG_LEVEL'),
+            level: config.get('LOG.LEVEL'),
         }),
          */
     ],

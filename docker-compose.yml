@@ -19,10 +19,13 @@ services:
       - mongo
     ports:
       - 4000:4000
+    command: "npm run serve"
     restart: always
     volumes:
+      - ./config:/app/config
+      - ./dist:/app/dist
       - ./src:/app/src
-      - ./public:/app/public
+      - ./data/artists:/app/data/artists
   mongo-express:
     image: mongo-express
     restart: always

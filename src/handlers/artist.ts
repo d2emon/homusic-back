@@ -1,19 +1,21 @@
 import express from 'express';
 import ErrorHandler from './error';
-import debug from '../debug';
-import HttpException from '../exceptions';
+import HttpException from '../exceptions/http';
 import {
     capitalize,
     slugToTitle,
 } from '../helpers/title';
 import Artist, {
-    ArtistInterface,
+    IArtistDocument,
 } from '../models/artist';
 
 class ArtistHandler {
+    req: express.Request;
+
     res: express.Response;
 
     constructor(req: express.Request, res: express.Response) {
+        this.req = req;
         this.res = res;
     }
 
@@ -23,11 +25,11 @@ class ArtistHandler {
             : Artist.find(query);
         return response
             .sort({ name: 1 })
-            .then((artists: ArtistInterface[]) => this.responseArtists(title, letter, artists))
-            .catch(this.responseError)
+            .then((artists: IArtistDocument[]) => this.responseArtists(title, letter, artists))
+            .catch(error => this.responseError(error))
     }
 
-    responseArtists(title?: string, letter?: string, processed: ArtistInterface[] = []) {
+    responseArtists(title?: string, letter?: string, processed: IArtistDocument[] = []) {
         return Artist
             .getUnprocessed(letter)
             .then((response: string[]) => response.map((slug) => ({
@@ -35,19 +37,18 @@ class ArtistHandler {
                 slug,
                 unprocessed: true,
             })))
-            .then((unprocessed: ArtistInterface[]) => [
+            .then((unprocessed:IArtistDocument[]) => [
                 ...processed,
                 ...unprocessed,
             ])
-            .then((artists: ArtistInterface[]) => this.res.json({
+            .then((artists: IArtistDocument[]) => this.res.json({
                 artists,
                 title: title || capitalize(letter),
             }));
     }
 
     responseError(error: HttpException) {
-        debug(error);
-        return ErrorHandler(this.res, error)
+        return ErrorHandler(error, this.req, this.res);
     }
 }
 

@@ -7,13 +7,15 @@ COPY package*.json ./
 RUN npm install
 
 COPY ts*.json ./
-COPY public ./public
+COPY config ./config
 COPY src ./src
 
-# RUN mkdir ./data
-# RUN mkdir ./data/files
+RUN mkdir ./data
+RUN mkdir ./data/artists
+RUN mkdir ./data/wiki
 
-# COPY data/files ./data/files
+COPY data/artists ./data/artists
+COPY data/db ./data/db
 
 ENV NODE_PATH ./src
 ENV DEBUG home-server

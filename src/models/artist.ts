@@ -1,4 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose, {
+    Document,
+    DocumentQuery,
+    Model,
+    Schema,
+} from 'mongoose';
 import config from '../config';
 import debug from '../debug';
 // import wiki from '../helpers/wiki';
@@ -6,43 +11,49 @@ import { slugToTitle } from '../helpers/title';
 import {
     getFiles,
     getFoldersByLetter,
-    getFile, FileData,
+    getFile,
+    FileData,
 } from '../helpers/folders';
 
-export interface ArtistInterface {
-    name: string,
-    slug: string,
-    description: string,
-    pages: string[],
-    unprocessed: boolean,
+export interface IArtistDocument extends Document {
+    name: string;
+    slug: string;
+    description: string;
+    pages: string[];
+    unprocessed: boolean;
+    albums: [];
+    songs: [];
 }
 
-const artistsPages = config.get('FOLDERS:ARTISTS');
+export interface IArtistModel extends Model<IArtistDocument> {
+    findByLetter: (letter: string) => DocumentQuery<IArtistDocument[], IArtistDocument>;
+    findSlugByLetter: (letter: string) => DocumentQuery<IArtistDocument[], IArtistDocument>;
+    getUnprocessed: (letter: string) => Promise<string[]>;
+    slugToName: (slug: string) => string;
+}
 
-const artistSchema = new mongoose.Schema({
+const artistsPages = config.get('FOLDERS.ARTISTS');
+
+const ArtistSchema = new Schema({
     name: String,
     slug: String,
     description: String,
     pages: [String],
 });
 
-/*
-artistSchema.virtual('albums', {
+ArtistSchema.virtual('albums', {
     ref: 'Album',
     localField: '_id',
     foreignField: 'author',
 });
-*/
 
-/*
-artistSchema.virtual('songs', {
+ArtistSchema.virtual('songs', {
     ref: 'Song',
     localField: '_id',
     foreignField: 'author',
 });
-*/
 
-artistSchema.static('findByLetter', function (letter: string): ArtistInterface[] {
+ArtistSchema.static('findByLetter', function (letter: string): DocumentQuery<IArtistDocument[], IArtistDocument> {
     if (!letter) return this.find();
     return this.find({
         name: {
@@ -52,7 +63,7 @@ artistSchema.static('findByLetter', function (letter: string): ArtistInterface[]
     });
 });
 
-artistSchema.static('findSlugByLetter', function (letter: string): ArtistInterface[] {
+ArtistSchema.static('findSlugByLetter', function (letter: string): DocumentQuery<IArtistDocument[], IArtistDocument> {
     if (!letter) return this.find();
     return this.find({
         slug: {
@@ -62,20 +73,20 @@ artistSchema.static('findSlugByLetter', function (letter: string): ArtistInterfa
     });
 });
 
-artistSchema.static('getUnprocessed', function (letter: string): Promise<string[]> {
+ArtistSchema.static('getUnprocessed', function (letter: string): Promise<string[]> {
     if (letter === '') return Promise.resolve([]);
     return getFoldersByLetter(artistsPages, letter)
         .then(files => (
             this.findSlugByLetter(letter)
-                .then((artists: ArtistInterface[]) => artists.map(artist => artist.slug))
+                .then((artists: IArtistDocument[]) => artists.map(artist => artist.slug))
                 .then((artists: string[]) => files.filter(file => artists.indexOf(file) < 0))
         ));
 });
 
-artistSchema.static('slugToName', slugToTitle);
+ArtistSchema.static('slugToName', slugToTitle);
 
 /*
-artistSchema.static('findInWikipedia', ({ name, slug }) => wiki
+ArtistSchema.static('findInWikipedia', ({ name, slug }) => wiki
     .page(name)
     .then(page => ({
         name,
@@ -127,7 +138,7 @@ artistSchema.static('findInWikipedia', ({ name, slug }) => wiki
     }));
  */
 
-artistSchema.static('files', (slug: string): Promise<string[]> => getFiles(
+ArtistSchema.static('files', (slug: string): Promise<string[]> => getFiles(
     `${artistsPages}/${slug}`,
 )
     .catch((error: Error): string[] => {
@@ -135,7 +146,7 @@ artistSchema.static('files', (slug: string): Promise<string[]> => getFiles(
         return [];
     }));
 
-artistSchema.static('file', (slug: string, filename: string): Promise<FileData | null> => getFile(
+ArtistSchema.static('file', (slug: string, filename: string): Promise<FileData | null> => getFile(
     `${artistsPages}/${slug}/${filename}`,
 )
     .catch((error: Error): null => {
@@ -143,13 +154,15 @@ artistSchema.static('file', (slug: string, filename: string): Promise<FileData |
         return null;
     }));
 
-artistSchema.static('descriptionFile', function (slug: string) {
+ArtistSchema.static('descriptionFile', function (slug: string) {
     return this.file(slug, 'about.md');
 });
 
-artistSchema.set('toJSON', {
+ArtistSchema.set('toJSON', {
     virtuals: true,
     versionKey: false,
 });
 
-export default mongoose.model('Artist', artistSchema);
+const Artist: IArtistModel = mongoose.model<IArtistDocument, IArtistModel>('Artist', ArtistSchema);
+
+export default Artist;

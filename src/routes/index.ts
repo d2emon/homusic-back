@@ -1,8 +1,8 @@
 import express from 'express';
+import HttpException from '../exceptions/http';
 import ArtistHandler from '../handlers/artist';
 import PageHandler from '../handlers/page';
 import getLetter from '../helpers/letters/index';
-import HttpException from '../exceptions';
 
 const router = express.Router();
 

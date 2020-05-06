@@ -1,9 +1,10 @@
 {
   "APP_NAME": "homusic",
   "DEBUG": "homusic:*",
-  "LOG_LEVEL": "debug",
-  "MONGO_URI": "mongodb://localhost/homusic",
+  "DEBUG.ERRORS": true,
+  "LOG.LEVEL": "debug",
+  "MONGO_URI": "mongodb://mongo/homusic",
   "PORT": 3000,
-  "FOLDERS:WIKI": "./files/pages/wiki",
-  "FOLDERS:ARTISTS": "./files/artists"
+  "FOLDERS.WIKI": "./data/wiki",
+  "FOLDERS.ARTISTS": "./data/artists"
 }

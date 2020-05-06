@@ -1,13 +1,15 @@
 import express from 'express';
 import ErrorHandler from './error';
-import debug from '../debug';
-import HttpException from '../exceptions';
+import HttpException from '../exceptions/http';
 import Page from '../models/page';
 
 class PageHandler {
+    req: express.Request;
+
     res: express.Response;
 
     constructor(req: express.Request, res: express.Response) {
+        this.req = req;
         this.res = res;
     }
 
@@ -15,19 +17,18 @@ class PageHandler {
         return Page
             .all()
             .then(pages => this.res.json({ pages }))
-            .catch(this.responseError);
+            .catch(error => this.responseError(error))
     }
 
     responsePage(filename: string) {
         return Page
             .find(filename)
             .then(page => this.res.json({ page }))
-            .catch(this.responseError);
+            .catch(error => this.responseError(error))
     }
 
     responseError(error: HttpException) {
-        debug(error);
-        return ErrorHandler(this.res, error)
+        return ErrorHandler(error, this.req, this.res);
     }
 }
 
