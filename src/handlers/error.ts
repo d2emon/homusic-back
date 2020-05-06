@@ -10,12 +10,12 @@ const errorResponse = (error: HttpException) => ({
     errorDetails: config.get('DEBUG.ERRORS') ? error : undefined,
 });
 
-const errorHandler = (error: HttpException, req: express.Request, res: express.Response) => res
+const errorHandler = (error: HttpException, req: express.Request, res: express.Response, next: express.NextFunction) => res
     // .status((error.code === 'ENOENT') ? 404 : 500)
     .status(error.status || 500)
     .json(errorResponse(error));
 
-export default (error: HttpException, req: express.Request, res: express.Response) => {
+export default (error: HttpException, req: express.Request, res: express.Response, next: express.NextFunction) => {
     debug(error);
-    return errorHandler(error, req, res);
+    return errorHandler(error, req, res, next);
 };

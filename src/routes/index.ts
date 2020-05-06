@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {NextFunction} from 'express';
 import ArtistHandler from '../handlers/artist';
 import PageHandler from '../handlers/page';
 
@@ -31,14 +31,16 @@ router.get('/artists/:language/:letter', (req: express.Request, res: express.Res
     return handler.byLetter(req.params.language, req.params.letter);
 });
 
-router.get('/pages', (req: express.Request, res: express.Response) => {
-    const handler = new PageHandler(req, res);
-    return handler.responsePages();
-});
+router.get(
+    '/pages',
+    (req: express.Request, res: express.Response, next: NextFunction) => PageHandler
+        .responsePages()(req, res, next),
+);
 
-router.get('/page/:filename', (req: express.Request, res: express.Response) => {
-    const handler = new PageHandler(req, res);
-    return handler.responsePage(req.params.filename);
-});
+router.get(
+    '/page/:filename',
+    (req: express.Request, res: express.Response, next) => PageHandler
+        .responsePage(req.params.filename)(req, res, next),
+);
 
 export default router;

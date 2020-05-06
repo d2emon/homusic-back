@@ -1,6 +1,4 @@
 import express from 'express';
-import ErrorHandler from './error';
-import HttpException from '../exceptions/http';
 import {
     capitalize,
     slugToTitle,
@@ -9,6 +7,10 @@ import Artist, {
     IArtistDocument,
 } from '../models/artist';
 import getLetter from "../helpers/letters";
+import {
+    successResponse,
+    errorResponse,
+} from './response';
 
 class ArtistHandler {
     req: express.Request;
@@ -18,16 +20,6 @@ class ArtistHandler {
     constructor(req: express.Request, res: express.Response) {
         this.req = req;
         this.res = res;
-    }
-
-    find(letter?: string, title?: string, query?: {}) {
-        const response = letter
-            ? Artist.findByLetter(letter)
-            : Artist.find(query);
-        return response
-            .sort({ name: 1 })
-            .then((artists: IArtistDocument[]) => this.responseArtists(title, letter, artists))
-            .catch(error => this.responseError(error))
     }
 
     responseArtists(title?: string, letter?: string, processed: IArtistDocument[] = []) {
@@ -42,14 +34,23 @@ class ArtistHandler {
                 ...processed,
                 ...unprocessed,
             ])
-            .then((artists: IArtistDocument[]) => this.res.json({
-                artists,
-                title: title || capitalize(letter),
-            }));
+            .then((artists: IArtistDocument[]) => successResponse(
+                this.res,
+                {
+                    artists,
+                    title: title || capitalize(letter),
+                },
+            ));
     }
 
-    responseError(error: HttpException) {
-        return ErrorHandler(error, this.req, this.res);
+    find(letter?: string, title?: string, query?: {}) {
+        const response = letter
+            ? Artist.findByLetter(letter)
+            : Artist.find(query);
+        return response
+            .sort({ name: 1 })
+            .then((artists: IArtistDocument[]) => this.responseArtists(title, letter, artists))
+            .catch(error => errorResponse(this.res, error))
     }
 
     byLetter(language?: string, letter?: string) {
