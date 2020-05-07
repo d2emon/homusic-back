@@ -14,6 +14,7 @@ import {
     getFile,
     FileData,
 } from '../helpers/folders';
+import exp from "constants";
 
 export interface IArtistDocument extends Document {
     name: string;
@@ -26,10 +27,33 @@ export interface IArtistDocument extends Document {
 }
 
 export interface IArtistModel extends Model<IArtistDocument> {
+    descriptionFile: (slug: string) =>  Promise<FileData | null>;
+    file: (slug: string, filename: string) => Promise<FileData | null>;
+    files: (slug: string) => Promise<string[]>;
     findByLetter: (letter: string) => DocumentQuery<IArtistDocument[], IArtistDocument>;
+    findInWikipedia: (query: WikiQuery) => Promise<WikiAnswer>,
     findSlugByLetter: (letter: string) => DocumentQuery<IArtistDocument[], IArtistDocument>;
     getUnprocessed: (letter: string) => Promise<string[]>;
     slugToName: (slug: string) => string;
+}
+
+interface WikiQuery {
+    name?: string;
+    slug?: string;
+}
+
+interface WikiAnswer {
+    // ...props,
+    name: string;
+    wikiLink: string;
+    // title,
+    description: string;
+    image: string;
+    genre: string;
+    genres: string;
+    // info,
+    // raw: page.raw,
+    unprocessed: boolean;
 }
 
 const artistsPages = config.get('FOLDERS.ARTISTS');
@@ -85,8 +109,9 @@ ArtistSchema.static('getUnprocessed', function (letter: string): Promise<string[
 
 ArtistSchema.static('slugToName', slugToTitle);
 
-/*
-ArtistSchema.static('findInWikipedia', ({ name, slug }) => wiki
+ArtistSchema.static('findInWikipedia', (query: WikiQuery): Promise<WikiAnswer> => {
+    /*
+    wiki
     .page(name)
     .then(page => ({
         name,
@@ -113,30 +138,37 @@ ArtistSchema.static('findInWikipedia', ({ name, slug }) => wiki
             page.info('жанры'),
             // page.fullInfo(),
         ])
-            .then((
-                [
-                    // title,
-                    description,
-                    image,
-                    genre,
-                    genres,
-                    // info,
-                ],
-            ) => ({
-                ...props,
-                name: page.raw.title,
-                wikiLink: page.raw.fullurl,
+    });
+     */
+    return Promise.resolve([
+        '',
+        '',
+        '',
+        '',
+    ])
+        .then((
+            [
                 // title,
                 description,
                 image,
                 genre,
                 genres,
                 // info,
-                // raw: page.raw,
-                unprocessed: true,
-            }));
-    }));
- */
+            ],
+        ) => ({
+            // ...props,
+            name: 'page.raw.title',
+            wikiLink: 'page.raw.fullurl',
+            // title,
+            description,
+            image,
+            genre,
+            genres,
+            // info,
+            // raw: page.raw,
+            unprocessed: true,
+        }));
+});
 
 ArtistSchema.static('files', (slug: string): Promise<string[]> => getFiles(
     `${artistsPages}/${slug}`,
@@ -154,7 +186,7 @@ ArtistSchema.static('file', (slug: string, filename: string): Promise<FileData |
         return null;
     }));
 
-ArtistSchema.static('descriptionFile', function (slug: string) {
+ArtistSchema.static('descriptionFile', function (slug: string): Promise<FileData | null> {
     return this.file(slug, 'about.md');
 });
 
