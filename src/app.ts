@@ -6,7 +6,7 @@ import mongoDb from './db/mongo';
 import NotFoundException from './exceptions/notFound';
 import ErrorHandler from './handlers/error';
 import routes from './routes'
-// import usersRouter from './routes/users';
+import artistsRouter from './routes/artists';
 // import artistRouter from './routes/artist';
 // import albumRouter from './routes/album';
 // import songRouter from './routes/song';
@@ -26,11 +26,18 @@ mongoDb.on('error', error => debug(error || ''));
 mongoDb.once('open', () => debug('MongoDB connected'));
 
 app.use('/', routes);
+app.use('/artists', artistsRouter);
 // app.use('/users', usersRouter);
 // app.use('/artist', artistRouter);
 // app.use('/album', albumRouter);
 // app.use('/song', songRouter);
-app.use((req: express.Request, res: express.Response) => ErrorHandler(new NotFoundException(), req, res));
+
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => ErrorHandler(
+    new NotFoundException(),
+    req,
+    res,
+    next,
+));
 app.use(ErrorHandler);
 
 export default app;
