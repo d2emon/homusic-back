@@ -7,8 +7,8 @@ import NotFoundException from './exceptions/notFound';
 import ErrorHandler from './handlers/error';
 import routes from './routes'
 import artistsRouter from './routes/artists';
-// import artistRouter from './routes/artist';
-// import albumRouter from './routes/album';
+import artistRouter from './routes/artist';
+import albumRouter from './routes/album';
 // import songRouter from './routes/song';
 
 const publicPath = path.join(__dirname, '..', 'public');
@@ -27,9 +27,8 @@ mongoDb.once('open', () => debug('MongoDB connected'));
 
 app.use('/', routes);
 app.use('/artists', artistsRouter);
-// app.use('/users', usersRouter);
-// app.use('/artist', artistRouter);
-// app.use('/album', albumRouter);
+app.use('/artist', artistRouter);
+app.use('/album', albumRouter);
 // app.use('/song', songRouter);
 
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => ErrorHandler(

@@ -14,7 +14,9 @@ import {
     getFile,
     FileData,
 } from '../helpers/folders';
-import exp from "constants";
+import {
+    IAlbumDocument,
+} from './album';
 
 export interface IArtistDocument extends Document {
     name: string;
@@ -22,7 +24,7 @@ export interface IArtistDocument extends Document {
     description: string;
     pages: string[];
     unprocessed: boolean;
-    albums: [];
+    albums: IAlbumDocument[];
     songs: [];
 }
 
