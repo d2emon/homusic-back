@@ -3,13 +3,14 @@ import mongoose, {
     Model,
     Schema,
 } from 'mongoose';
+import {ISongDocument} from "./song";
 
 export interface IAlbumDocument extends Document {
     title: string;
     author: Schema.Types.ObjectId,
     slug: string;
     description: string;
-    songs: [];
+    songs: ISongDocument[];
 }
 
 export interface IAlbumModel extends Model<IAlbumDocument> {

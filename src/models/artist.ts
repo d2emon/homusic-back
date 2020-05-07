@@ -17,6 +17,7 @@ import {
 import {
     IAlbumDocument,
 } from './album';
+import {ISongDocument} from "./song";
 
 export interface IArtistDocument extends Document {
     name: string;
@@ -25,7 +26,7 @@ export interface IArtistDocument extends Document {
     pages: string[];
     unprocessed: boolean;
     albums: IAlbumDocument[];
-    songs: [];
+    songs: ISongDocument[];
 }
 
 export interface IArtistModel extends Model<IArtistDocument> {

@@ -7,6 +7,7 @@ import HttpException from '../exceptions/http';
 import Album, {
     IAlbumDocument,
 } from '../models/album';
+import Artist from "../models/artist";
 
 export default {
     getAlbum: (req: express.Request, res: express.Response) => Album
@@ -16,7 +17,7 @@ export default {
         .then((album: IAlbumDocument) => successResponse(res, { album }))
         .catch((error: HttpException) => errorResponse(res, error)),
 
-    addAlbum: (req: express.Request, res: express.Response) => Album
+    addAlbum: (req: express.Request, res: express.Response) => Artist
         .findOne({ slug: req.body.author })
         .then((author) => {
             const album = new Album({
