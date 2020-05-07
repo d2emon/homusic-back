@@ -3,11 +3,9 @@ import {
     successResponse,
     errorResponse,
 } from './response';
-
-interface News {
-    date: Date,
-    text: string,
-}
+import Image from "../models/image";
+import News from "../models/news";
+import HttpException from "../exceptions/http";
 
 interface Event {
     date: Date,
@@ -41,77 +39,70 @@ interface Video {
 
 export default {
     getAbout: (req: express.Request, res: express.Response) => {
-        try {
-            const news: News[] = [
-                {
-                    date: new Date(2020, 11, 9),
-                    text: 'Lorem ipsum dolor',
-                },
-                {
-                    date: new Date(2020, 11, 9),
-                    text: 'Lorem ipsum dolor',
-                },
-                {
-                    date: new Date(2020, 11, 9),
-                    text: 'Lorem ipsum dolor',
-                },
-            ];
+        const tours: Tour[] = [
+            {
+                date: new Date(2020, 11, 9),
+                place: 'New York',
+                description: 'Lorem ipsum dolor',
+                tickets: 'http://example.com',
+                phone: '123456',
+            },
+            {
+                date: new Date(2020, 11, 9),
+                place: 'New York',
+                description: 'Lorem ipsum dolor',
+                tickets: 'http://example.com',
+                phone: '123456',
+            },
+            {
+                date: new Date(2020, 11, 9),
+                place: 'New York',
+                description: 'Lorem ipsum dolor',
+                tickets: 'http://example.com',
+                phone: '123456',
+            },
+        ];
 
-            const tours: Tour[] = [
-                {
-                    date: new Date(2020, 11, 9),
-                    place: 'New York',
-                    description: 'Lorem ipsum dolor',
-                    tickets: 'http://example.com',
-                    phone: '123456',
-                },
-                {
-                    date: new Date(2020, 11, 9),
-                    place: 'New York',
-                    description: 'Lorem ipsum dolor',
-                    tickets: 'http://example.com',
-                    phone: '123456',
-                },
-                {
-                    date: new Date(2020, 11, 9),
-                    place: 'New York',
-                    description: 'Lorem ipsum dolor',
-                    tickets: 'http://example.com',
-                    phone: '123456',
-                },
-            ];
+        const album: string = 'image.jpg';
 
-            const album: string = 'image.jpg';
+        const events: Event[] = [
+            {
+                date: new Date(2020, 11, 9),
+                description: 'Lorem ipsum dolor',
+            },
+            {
+                date: new Date(2020, 11, 9),
+                description: 'Lorem ipsum dolor',
+            },
+            {
+                date: new Date(2020, 11, 9),
+                description: 'Lorem ipsum dolor',
+            },
+        ];
 
-            const events: Event[] = [
-                {
-                    date: new Date(2020, 11, 9),
-                    description: 'Lorem ipsum dolor',
-                },
-                {
-                    date: new Date(2020, 11, 9),
-                    description: 'Lorem ipsum dolor',
-                },
-                {
-                    date: new Date(2020, 11, 9),
-                    description: 'Lorem ipsum dolor',
-                },
-            ];
+        const video: Video = {
+            link: 'image.jpg',
+            title: 'Video',
+            rating: 5,
+        };
 
-            const video: Video = {
-                link: 'image.jpg',
-                title: 'Video',
-                rating: 5,
-            };
+        const about = 'Lorem ipsum dolor';
 
-            const about = 'Lorem ipsum dolor';
-
-            const gallery: string[] = [
-                'image1.jpg',
-                'image1.jpg',
-                'image1.jpg',
-            ]
-            return successResponse(res, {
+        Promise.all([
+            Image
+                .find({})
+                .limit(5),
+            News
+                .find({})
+                .sort('date')
+                .limit(3),
+            tours,
+            album,
+            events,
+            video,
+            about,
+        ])
+            .then(([
                 gallery,
                 news,
                 tours,
@@ -119,10 +110,16 @@ export default {
                 events,
                 video,
                 about,
-            })
-        } catch (error) {
-            return errorResponse(res, error);
-        }
+            ]) => successResponse(res, {
+                gallery,
+                news,
+                tours,
+                album,
+                events,
+                video,
+                about,
+            }))
+            .catch((error: HttpException) => errorResponse(res, error));
     },
 
     getAudio: (req: express.Request, res: express.Response) => {
@@ -212,20 +209,10 @@ export default {
         }
     },
 
-    getGallery: (req: express.Request, res: express.Response) => {
-        try {
-            const gallery: string[] = [
-                'image1.jpg',
-                'image1.jpg',
-                'image1.jpg',
-            ]
-            return successResponse(res, {
-                gallery,
-            })
-        } catch (error) {
-            return errorResponse(res, error);
-        }
-    },
+    getGallery: (req: express.Request, res: express.Response) => Image
+        .find({})
+        .then(gallery => successResponse(res, { gallery }))
+        .catch((error: HttpException) => errorResponse(res, error)),
 
     getTours: (req: express.Request, res: express.Response) => {
         try {
