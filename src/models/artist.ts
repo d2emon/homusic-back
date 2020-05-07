@@ -4,9 +4,10 @@ import mongoose, {
     Model,
     Schema,
 } from 'mongoose';
+import { Page } from 'wikijs';
 import config from '../config';
 import debug from '../debug';
-// import wiki from '../helpers/wiki';
+import Wiki from '../helpers/wiki';
 import { slugToTitle } from '../helpers/title';
 import {
     getFiles,
@@ -17,7 +18,21 @@ import {
 import {
     IAlbumDocument,
 } from './album';
-import {ISongDocument} from "./song";
+import {
+    ISongDocument,
+} from './song';
+
+interface WikiQuery {
+    name?: string;
+    slug?: string;
+}
+
+interface WikiPage extends WikiQuery {
+    name?: string;
+    slug?: string;
+    page?: Page;
+    unprocessed: boolean;
+}
 
 export interface IArtistDocument extends Document {
     name: string;
@@ -34,29 +49,10 @@ export interface IArtistModel extends Model<IArtistDocument> {
     file: (slug: string, filename: string) => Promise<FileData | null>;
     files: (slug: string) => Promise<string[]>;
     findByLetter: (letter: string) => DocumentQuery<IArtistDocument[], IArtistDocument>;
-    findInWikipedia: (query: WikiQuery) => Promise<WikiAnswer>,
+    findInWikipedia: (query: WikiQuery) => Promise<{}>,
     findSlugByLetter: (letter: string) => DocumentQuery<IArtistDocument[], IArtistDocument>;
     getUnprocessed: (letter: string) => Promise<string[]>;
     slugToName: (slug: string) => string;
-}
-
-interface WikiQuery {
-    name?: string;
-    slug?: string;
-}
-
-interface WikiAnswer {
-    // ...props,
-    name: string;
-    wikiLink: string;
-    // title,
-    description: string;
-    image: string;
-    genre: string;
-    genres: string;
-    // info,
-    // raw: page.raw,
-    unprocessed: boolean;
 }
 
 const artistsPages = config.get('FOLDERS.ARTISTS');
@@ -112,28 +108,26 @@ ArtistSchema.static('getUnprocessed', function (letter: string): Promise<string[
 
 ArtistSchema.static('slugToName', slugToTitle);
 
-ArtistSchema.static('findInWikipedia', (query: WikiQuery): Promise<WikiAnswer> => {
-    /*
-    wiki
-    .page(name)
-    .then(page => ({
-        name,
-        slug,
+ArtistSchema.static('findInWikipedia', (query: WikiQuery): Promise<{}> => Wiki
+    .page(query.name)
+    .then((page): WikiPage => ({
+        ...query,
         page,
         unprocessed: true,
     }))
-    .catch(() => ({
-        name,
-        slug,
+    .catch((): WikiPage => ({
+        ...query,
         unprocessed: true,
     }))
-    .then((artist) => {
+    .then((artist: WikiPage) => {
         const {
             page,
             ...props
         } = artist;
-        if (!page) return artist;
+        if (!page) return [];
         return Promise.all([
+            page,
+            props,
             // page.info('название'),
             page.summary(),
             page.mainImage(),
@@ -141,37 +135,29 @@ ArtistSchema.static('findInWikipedia', (query: WikiQuery): Promise<WikiAnswer> =
             page.info('жанры'),
             // page.fullInfo(),
         ])
-    });
-     */
-    return Promise.resolve([
-        '',
-        '',
-        '',
-        '',
-    ])
-        .then((
-            [
-                // title,
-                description,
-                image,
-                genre,
-                genres,
-                // info,
-            ],
-        ) => ({
-            // ...props,
-            name: 'page.raw.title',
-            wikiLink: 'page.raw.fullurl',
-            // title,
-            description,
-            image,
-            genre,
-            genres,
-            // info,
-            // raw: page.raw,
-            unprocessed: true,
-        }));
-});
+    })
+    .then(([
+        page,
+        props,
+        // title,
+        description,
+        image,
+        genre,
+        genres,
+        // info,
+    ]) => ({
+        ...props,
+        name: page.raw.title,
+        wikiLink: page.raw.fullurl,
+        // title,
+        description,
+        image,
+        genre,
+        genres,
+        // info,
+        // raw: page.raw,
+        unprocessed: true,
+    })));
 
 ArtistSchema.static('files', (slug: string): Promise<string[]> => getFiles(
     `${artistsPages}/${slug}`,
