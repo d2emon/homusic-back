@@ -39,7 +39,7 @@ interface Video {
 
 export default {
     getAbout: (req: express.Request, res: express.Response) => {
-        const tours: Tour[] = [
+        const dataTours: Tour[] = [
             {
                 date: new Date(2020, 11, 9),
                 place: 'New York',
@@ -63,9 +63,9 @@ export default {
             },
         ];
 
-        const album: string = 'image.jpg';
+        const dataAlbum: string = 'image.jpg';
 
-        const events: Event[] = [
+        const dataEvents: Event[] = [
             {
                 date: new Date(2020, 11, 9),
                 description: 'Lorem ipsum dolor',
@@ -80,13 +80,13 @@ export default {
             },
         ];
 
-        const video: Video = {
+        const dataVideo: Video = {
             link: 'image.jpg',
             title: 'Video',
             rating: 5,
         };
 
-        const about = 'Lorem ipsum dolor';
+        const dataAbout = 'Lorem ipsum dolor';
 
         Promise.all([
             Image
@@ -96,11 +96,11 @@ export default {
                 .find({})
                 .sort('date')
                 .limit(3),
-            tours,
-            album,
-            events,
-            video,
-            about,
+            dataTours,
+            dataAlbum,
+            dataEvents,
+            dataVideo,
+            dataAbout,
         ])
             .then(([
                 gallery,
