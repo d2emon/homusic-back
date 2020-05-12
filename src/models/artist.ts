@@ -129,10 +129,10 @@ ArtistSchema.static('findInWikipedia', (query: WikiQuery): Promise<{}> => Wiki
             page,
             props,
             // page.info('название'),
-            page.summary(),
-            page.mainImage(),
-            page.info('жанр'),
-            page.info('жанры'),
+            page && page.summary(),
+            page && page.mainImage(),
+            page && page.info('жанр'),
+            page && page.info('жанры'),
             // page.fullInfo(),
         ])
     })
@@ -147,8 +147,8 @@ ArtistSchema.static('findInWikipedia', (query: WikiQuery): Promise<{}> => Wiki
         // info,
     ]) => ({
         ...props,
-        name: page.raw.title,
-        wikiLink: page.raw.fullurl,
+        name: page.raw && page.raw.title,
+        wikiLink: page.raw && page.raw.fullurl,
         // title,
         description,
         image,
@@ -176,7 +176,7 @@ ArtistSchema.static('file', (slug: string, filename: string): Promise<FileData |
     }));
 
 ArtistSchema.static('descriptionFile', function (slug: string): Promise<FileData | null> {
-    return this.file(slug, 'about.md');
+    return this.file(slug, 'index.md');
 });
 
 ArtistSchema.set('toJSON', {

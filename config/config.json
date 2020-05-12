@@ -6,5 +6,5 @@
   "MONGO_URI": "mongodb://mongo/homusic",
   "PORT": 3000,
   "FOLDERS.WIKI": "./data/wiki",
-  "FOLDERS.ARTISTS": "./data/artists"
+  "FOLDERS.ARTISTS": "/app/data/artists"
 }

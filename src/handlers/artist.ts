@@ -76,10 +76,14 @@ export default {
         .findOne({ slug: req.params.slug })
         .populate('albums')
         .populate('songs')
-        .then((artist: IArtistDocument) => artist)
+        .then((artist: IArtistDocument) => artist || {
+            unprocessed: true,
+            slug: req.params.slug,
+            name: req.params.slug,
+        })
         // .then((artist: IArtistDocument) => artist || Artist.findInWikipedia({ name: Artist.slugToName(slug), slug })
         // .then(artist => Artist.files(slug).then(files => ({ artist, files })))
-        .then(artist => Artist
+        .then((artist: IArtistDocument) => Artist
             .files(req.params.slug)
             .then((files) => {
                 artist.pages = [
